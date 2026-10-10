@@ -1,0 +1,25 @@
+
+# Build
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.map
+*.exe
+build/
+Debug/
+Release/
+app
+
+# Python
+__pycache__/
+*.pyc
+
+# Simulink
+slprj/
+*.slxc
+*.autosave
+
+# Éditeur
+.vscode/
