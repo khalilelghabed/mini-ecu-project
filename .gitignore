@@ -10,7 +10,7 @@
 build/
 Debug/
 Release/
-app
+
 
 # Python
 __pycache__/
