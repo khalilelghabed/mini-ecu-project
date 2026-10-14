@@ -11,4 +11,6 @@ typedef struct {
     uint8_t  data[CAN_MAX_DLC];     /* octets de données                */
 } can_frame_t;
 
+
+
 #endif /* CAN_TYPES_H */
