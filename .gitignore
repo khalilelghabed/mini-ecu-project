@@ -23,3 +23,8 @@ slprj/
 
 # Éditeur
 .vscode/
+
+# Sauvegardes d'éditeur
+*.save
+*~
+*.swp
