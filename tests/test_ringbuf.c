@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ringbuf.h"
+#include "app/ringbuf.h"
 
 #define CHECK(c) do { if (!(c)) { \
     printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c); return 1; } } while (0)

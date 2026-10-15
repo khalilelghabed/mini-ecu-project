@@ -34,3 +34,23 @@ Potentiomètre -> [Nœud capteur] --CAN--> [Nœud contrôle] -> PWM -> Moteur
 - [ ] Semaine 6 : UDS
 - [ ] Semaine 7 : Simulink et PID
 - [ ] Semaine 8 : architecture AUTOSAR, tests, documentation
+
+
+
+## Structure de la trame CAN (DLC = 8 octets)
+
+| Octets | Signal      | Type brut                | Facteur / Décalage   | Plage            |
+|--------|-------------|--------------------------|----------------------|------------------|
+| 0 et 1 | Vitesse     | `uint16_t`(little-endian) | 0,1 km/h par unité   | 0 à 6553,5 km/h  |
+| 2 et 3 | Consigne    | `uint16_t`(little-endian) | 0,1 km/h par unité   | 0 à 6553,5 km/h  |
+| 4      | Température | `uint8_t`                | Décalage de −40 °C   | −40 à 215 °C     |
+| 5      | Drapeaux    | 1 bit par état           | Bit 0 : Régulation active<br>Bit 1 : Défaut<br>Bit 2 : Frein | 0 ou 1 par bit |
+| 6 et 7 | Réservés    | `uint8_t`                | Toujours à 0         | 0                |
+
+**Remarques :**
+
+- **Little-endian** : l'octet de poids faible est transmis en premier.
+- **Vitesse réelle** = valeur brute × 0,1 km/h.
+- **Consigne réelle** = valeur brute × 0,1 km/h.
+- **Température réelle** = valeur brute − 40 °C.
+- **DLC = 8** : la trame transporte 8 octets de données..
