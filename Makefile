@@ -94,12 +94,7 @@ DEPFILES = $(SIGNALS_OBJ:.o=.d) \
 
 .PHONY: test_gpio
 
-build/test_gpio: src/hal/gpio.c src/hal/gpio.h tests/test_gpio.c tests/stubs/main.h
-	mkdir -p build
-	gcc -Wall -Wextra -Werror -std=c11 \
-	    -Isrc -Itests/stubs \
-	    src/hal/gpio.c tests/test_gpio.c \
-	    -o build/test_gpio
+build/test_gpio: src/hal/gpio.c src/hal/gpio.h tests/test_gpio.c tests/stubs/stm32h7xx.h
 
 test_gpio: build/test_gpio
 	./build/test_gpio

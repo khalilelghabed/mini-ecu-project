@@ -1,98 +1,113 @@
+
 #include <assert.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 
-#include "main.h"
+#include "stm32h7xx.h"
 #include "hal/gpio.h"
 
-/* Faux ports GPIO */
+/* Registres simulés dans la RAM du PC */
 GPIO_TypeDef fake_gpiob = {0};
 GPIO_TypeDef fake_gpioc = {0};
+RCC_TypeDef fake_rcc = {0};
 
-/* États simulés */
-static GPIO_PinState led_state = GPIO_PIN_RESET;
-static GPIO_PinState button_state = GPIO_PIN_RESET;
-
-/* Fausse fonction de lecture */
-GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *port,
-                                uint16_t pin)
+static void test_gpio_init(void)
 {
-    assert(port == BUTTON_USER_GPIO_Port);
-    assert(pin == BUTTON_USER_Pin);
+    gpio_init();
 
-    return button_state;
+    assert((fake_rcc.AHB4ENR & (3U << 1))
+           == (3U << 1));
+
+    assert((fake_gpiob.MODER & 3U) == 1U);
+
+    assert((fake_gpioc.MODER & (3U << 26)) == 0U);
+
+    printf("[TEST] gpio_init          OK\n");
 }
 
-/* Fausse fonction d'écriture */
-void HAL_GPIO_WritePin(GPIO_TypeDef *port,
-                       uint16_t pin,
-                       GPIO_PinState state)
+static void test_gpio_set_clear(void)
 {
-    assert(port == LED_STATUS_GPIO_Port);
-    assert(pin == LED_STATUS_Pin);
+    gpio_set(GPIO_PORT_B, 0U);
+    assert(fake_gpiob.BSRR == (1U << 0));
 
-    led_state = state;
+    gpio_clear(GPIO_PORT_B, 0U);
+    assert(fake_gpiob.BSRR == (1U << 16));
+
+    printf("[TEST] gpio_set_clear     OK\n");
 }
 
-/* Fausse fonction Toggle */
-void HAL_GPIO_TogglePin(GPIO_TypeDef *port,
-                        uint16_t pin)
+static void test_gpio_toggle(void)
 {
-    assert(port == LED_STATUS_GPIO_Port);
-    assert(pin == LED_STATUS_Pin);
+    /* Simuler une sortie initialement à 0 */
+    fake_gpiob.ODR = 0U;
 
-    led_state = (led_state == GPIO_PIN_SET)
-              ? GPIO_PIN_RESET
-              : GPIO_PIN_SET;
+    gpio_toggle(GPIO_PORT_B, 0U);
+    assert(fake_gpiob.BSRR == (1U << 0));
+
+    /* Simuler l'effet matériel de l'écriture BSRR */
+    fake_gpiob.ODR = 1U;
+
+    gpio_toggle(GPIO_PORT_B, 0U);
+    assert(fake_gpiob.BSRR == (1U << 16));
+
+    printf("[TEST] gpio_toggle        OK\n");
 }
 
-/* TEST 1 : Allumer et éteindre */
-static void test_led_write(void)
+static void test_gpio_read(void)
+{
+    fake_gpioc.IDR = 0U;
+    assert(gpio_read(GPIO_PORT_C, 13U) == false);
+
+    fake_gpioc.IDR = (1U << 13);
+    assert(gpio_read(GPIO_PORT_C, 13U) == true);
+
+    printf("[TEST] gpio_read          OK\n");
+}
+
+static void test_application_api(void)
 {
     mini_ecu_led_write(true);
-    assert(led_state == GPIO_PIN_SET);
+    assert(fake_gpiob.BSRR == (1U << 0));
 
     mini_ecu_led_write(false);
-    assert(led_state == GPIO_PIN_RESET);
+    assert(fake_gpiob.BSRR == (1U << 16));
 
-    printf("[TEST] led_write        OK\n");
-}
-
-/* TEST 2 : Inverser la LED */
-static void test_led_toggle(void)
-{
-    led_state = GPIO_PIN_RESET;
-
-    mini_ecu_led_toggle();
-    assert(led_state == GPIO_PIN_SET);
-
-    mini_ecu_led_toggle();
-    assert(led_state == GPIO_PIN_RESET);
-
-    printf("[TEST] led_toggle       OK\n");
-}
-
-/* TEST 3 : Lire le bouton */
-static void test_button_pressed(void)
-{
-    button_state = GPIO_PIN_RESET;
-    assert(mini_ecu_button_pressed() == false);
-
-    button_state = GPIO_PIN_SET;
+    fake_gpioc.IDR = (1U << 13);
     assert(mini_ecu_button_pressed() == true);
 
-    printf("[TEST] button_pressed   OK\n");
+    fake_gpiob.ODR = 0U;
+    mini_ecu_led_toggle();
+    assert(fake_gpiob.BSRR == (1U << 0));
+
+    printf("[TEST] application_api    OK\n");
+}
+
+static void test_invalid_pin(void)
+{
+    fake_gpiob.BSRR = 0U;
+
+    gpio_set(GPIO_PORT_B, 16U);
+
+    assert(fake_gpiob.BSRR == 0U);
+    assert(gpio_read(GPIO_PORT_C, 16U) == false);
+
+    printf("[TEST] invalid_pin        OK\n");
 }
 
 int main(void)
 {
-    printf("\n=== TESTS UNITAIRES GPIO ===\n\n");
+    printf("\n=== TESTS GPIO PAR REGISTRES ===\n\n");
 
-    test_led_write();
-    test_led_toggle();
-    test_button_pressed();
+    test_gpio_init();
+    test_gpio_set_clear();
+    test_gpio_toggle();
+    test_gpio_read();
+    test_application_api();
+    test_invalid_pin();
 
-    printf("\nTous les tests GPIO ont réussi !\n");
+    printf("\nTous les tests ont réussi !\n");
 
     return 0;
 }
+
