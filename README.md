@@ -62,11 +62,15 @@ Nous avons commencé par les composants fondamentaux, testables sans réseau CAN
 |---|---|---|
 | `src/app/signals.c` | Encoder et décoder les signaux de vitesse, consigne, température et états | Développé ; 11 tests unitaires réussis sur PC |
 | `src/app/ringbuf.c` | Stocker temporairement des données dans un tampon circulaire (par exemple des messages reçus) | Module développé et testé sur PC ; intégration CAN à venir |
-| `src/hal/gpio.c` | Lire un bouton et piloter une LED sans mettre les appels HAL partout dans l'application | 3 tests unitaires GPIO réussis sur PC |
+
+| `src/hal/gpio.c` / `gpio.h` | Configurer et piloter PB0 (LED) et PC13 (bouton) directement par les registres RCC/GPIO | Compilation STM32 réussie, tests unitaires sur PC et scénario Renode validés |
+
 | `main.c` STM32 | Orchestrer la lecture du bouton et le changement d'état de la LED | Compilation ARM et scénario GPIO validés dans Renode |
 | `tests/stubs/main.h` | Simuler les éléments de la HAL STM32 pour tester `gpio.c` sur ordinateur | Utilisé pour les tests GPIO |
 | `Makefile` | Automatiser la compilation et l'exécution des tests sur PC | Cible `make test_gpio` vérifiée |
  
+| `src/hal/clock.c` / `clock.h` | Lire les fréquences système et bus via la HAL RCC | Compilé pour STM32H753ZI ; SYSCLK, HCLK, PCLK1 et PCLK2 vérifiés à 64 MHz dans Renode |
+
 ### Validation actuelle dans Renode
  
 La plateforme simulée est une **NUCLEO-H753ZI** (STM32H753ZI, Cortex-M7) :
@@ -303,3 +307,4 @@ Pour chaque nouvelle fonction, conserver :
 Les fichiers générés (`build/`, objets `.o`, exécutables de test, `Debug/` de CubeIDE) ne doivent pas être ajoutés par erreur à Git. Les sources, les tests, la documentation et le Makefile sont les éléments à versionner.
  
 **Statut global :** bases logicielles et chaîne GPIO validées sur PC et en simulation ; application Mini-ECU à deux nœuds CAN en cours de développement.
+
