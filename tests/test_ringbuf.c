@@ -59,14 +59,59 @@ static int test_full_and_wrap(void)
     return 0;
 }
 
+static int test_capacity_64(void)
+{
+    uint8_t storage[64];
+    ringbuf_t rb;
+    uint8_t value;
+
+    ringbuf_init(&rb, storage, sizeof(storage));
+
+    /* Le tampon est initialement vide */
+    CHECK(ringbuf_is_empty(&rb));
+
+    /* Inserer 63 octets */
+    for (uint8_t i = 0; i < 63; i++)
+    {
+        CHECK(ringbuf_put(&rb, i));
+    }
+
+    /* 63 octets stockes sur 64 cases physiques */
+    CHECK(ringbuf_count(&rb) == 63);
+    CHECK(ringbuf_is_full(&rb));
+
+    /* La 64e insertion doit etre refusee */
+    CHECK(!ringbuf_put(&rb, 99));
+
+    /* Le nombre d'octets ne doit pas changer */
+    CHECK(ringbuf_count(&rb) == 63);
+
+    /* Recuperer les 63 octets et verifier leur ordre */
+    for (uint8_t i = 0; i < 63; i++)
+    {
+        CHECK(ringbuf_get(&rb, &value));
+        CHECK(value == i);
+    }
+
+    /* Le tampon doit etre vide apres la lecture */
+    CHECK(ringbuf_is_empty(&rb));
+    CHECK(ringbuf_count(&rb) == 0);
+
+    /* Aucune lecture supplementaire ne doit reussir */
+    CHECK(!ringbuf_get(&rb, &value));
+
+            return 0;
+}
+
 int main(void)
 {
     int fails = 0;
     fails += test_fifo_order();
     fails += test_empty();
     fails += test_full_and_wrap();
+    fails += test_capacity_64();
     if (fails == 0) {
-        printf("OK : 3 tests reussis\n");
+        printf("OK : 4 tests reussis\n");
     }
     return fails;
 }

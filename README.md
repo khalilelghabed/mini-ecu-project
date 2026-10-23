@@ -308,3 +308,32 @@ Les fichiers générés (`build/`, objets `.o`, exécutables de test, `Debug/` d
  
 **Statut global :** bases logicielles et chaîne GPIO validées sur PC et en simulation ; application Mini-ECU à deux nœuds CAN en cours de développement.
 
+
+### Day 9 — UART Communication and Debug Logging
+
+Implemented UART TX/RX communication on the STM32H753
+Sensor Node using USART3 and the STM32 HAL/BSP.
+
+Features:
+- UART initialization through BSP COM1
+- Byte and text transmission
+- Formatted logging using vsnprintf()
+- Periodic data output with HAL_GetTick()
+- UART reception with circular buffering
+- Character echo
+- RX buffer overflow counter
+
+Validation:
+- TX/RX communication tested in Renode
+- Periodic speed and temperature output verified
+- RX buffer overflow deliberately triggered
+- 18 rejected bytes observed during overflow test
+- 15 host-side unit tests passed
+
+Current limitation:
+UART reception uses polling. Hardware-level data loss is not
+fully monitored, and physical UART communication remains
+to be validated.
+
+Technical documentation:
+[UART Debug Documentation](docs/uart_debug.md)
