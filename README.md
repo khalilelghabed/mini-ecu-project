@@ -337,3 +337,27 @@ to be validated.
 
 Technical documentation:
 [UART Debug Documentation](docs/uart_debug.md)
+
+
+### UART Command Console
+
+Implemented a finite state machine (FSM) for UART command parsing.
+
+Supported commands:
+- `led on`
+- `led off`
+- `status`
+- `version`
+
+Features:
+- WAITING / RECEIVING / DISCARDING states
+- Fixed-size command buffer
+- Backspace and CR/LF handling
+- Unknown command and overflow detection
+- GPIO LED control on STM32H753
+
+Validation:
+- 11 console unit tests
+- UART and GPIO integration validated in Renode
+
+[Technical Documentation](docs/console_uart.md)
