@@ -4,6 +4,7 @@
 #include "stm32h7xx_nucleo.h"
 #include <string.h>
 #include "app/ringbuf.h"
+#include "stm32h7xx.h"
 
 static uint8_t rx_storage[64];
 static ringbuf_t rx_buffer;
@@ -51,7 +52,6 @@ bool uart_write(const uint8_t *data, uint16_t length)
 {
     if ((data == NULL) || (length == 0U))
     {
-        return false;
     }
 
     HAL_StatusTypeDef status = HAL_UART_Transmit(
@@ -83,4 +83,39 @@ bool uart_write_text(const char *text)
         (uint16_t)length
     );
 }
+
+
+
+
+bool uart_fault_write(const char *text)
+{
+    if (text == NULL)
+    {
+        return false;
+    }
+
+    while (*text != '\0')
+    {
+        uint32_t timeout = 100000U;
+
+        /* Attendre que USART3 puisse accepter un octet */
+        while ((USART3->ISR & USART_ISR_TXE_TXFNF) == 0U)
+        {
+            if (timeout == 0U)
+            {
+                return false;
+            }
+
+            timeout--;
+        }
+
+        /* Transmettre un caractere */
+        USART3->TDR = (uint32_t)(uint8_t)(*text);
+
+        text++;
+    }
+
+    return true;
+}
+
 

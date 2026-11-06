@@ -15,4 +15,6 @@ uint32_t uart_rx_overflow_count(void);
 void uart_rx_init(void);
 void uart_rx_poll(void);
 bool uart_read_byte(uint8_t *byte);
+bool uart_fault_write(const char *text);
+
 #endif

@@ -361,3 +361,45 @@ Validation:
 - UART and GPIO integration validated in Renode
 
 [Technical Documentation](docs/console_uart.md)
+
+
+##EXTI / NVIC : interruptions externes
+
+### Objectif
+Implémenter une détection d'appui sur PC13 par interruption
+EXTI13, avec anti-rebond logiciel de 30 ms, afin de remplacer
+le polling du bouton.
+
+### Architecture
+PC13 → EXTI13 → NVIC → EXTI15_10_IRQHandler()
+     → HAL_EXTI_IRQHandler(&H_EXTI_13)
+     → Exti_OnInterrupt()
+     → Exti_Process()
+     → Exti_TakeEmergencyEvent()
+     → mini_ecu_led_toggle() → PB0
+
+### Implémentation
+- src/hal/exti.c / exti.h : gestion des événements EXTI.
+- Callback court signalant l'interruption.
+- Machine à états pour validation de l'appui et du relâchement.
+- Traitement applicatif hors de l'ISR.
+- Intégration à STM32CubeIDE avec STM32 HAL.
+
+### Validation
+- Compilation : 0 erreur, 0 warning.
+- Simulation : Renode / NUCLEO-H753ZI.
+- Console USART3 et commandes LED ON/OFF : OK.
+- Premier appui PC13 : OK.
+- Relâchement : OK.
+- Deuxième appui : OK.
+- Maintien sans répétition : OK.
+
+### Limites
+- Rebonds courts non caractérisés.
+- Validation sur matériel réel à effectuer.
+- L'événement d'urgence commande actuellement une LED de test ;
+  il ne constitue pas un arrêt d'urgence matériel.
+
+### Prochaine étape
+Jour 14 : timer matériel, interruption périodique,
+base de temps 1 ms et clignotement à 2 Hz sans HAL_Delay().
