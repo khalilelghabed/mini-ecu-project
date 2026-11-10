@@ -400,6 +400,15 @@ PC13 → EXTI13 → NVIC → EXTI15_10_IRQHandler()
 - L'événement d'urgence commande actuellement une LED de test ;
   il ne constitue pas un arrêt d'urgence matériel.
 
-### Prochaine étape
-Jour 14 : timer matériel, interruption périodique,
-base de temps 1 ms et clignotement à 2 Hz sans HAL_Delay().
+## Timers materiels STM32
+
+Implementation de TIM7 sur STM32L4R5ZI-P :
+
+- Base de temps de 1 ms par interruption.
+- Module timer.c / timer.h.
+- Module led_blink.c / led_blink.h.
+- Clignotement non bloquant de LD2 (PB7) a 2 Hz.
+- Verification du callback et du compteur avec SWD.
+- Architecture modulaire inspiree d'AUTOSAR Classic.
+
+Documentation : [Jour 14 - TIM7](docs/Jour_14_TIM7.md)

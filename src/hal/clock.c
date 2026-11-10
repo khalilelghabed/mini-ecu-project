@@ -1,9 +1,10 @@
 
 #include "hal/clock.h"
-#include "stm32h7xx_hal.h"
+#include "stm32l4xx_hal.h"
 
 #include <stddef.h>
 
+/* Lire les fréquences d'horloge du STM32 */
 void clock_get_info(clock_info_t *info)
 {
     if (info == NULL)

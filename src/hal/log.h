@@ -1,9 +1,6 @@
-#ifndef LOG_H
-#define LOG_H
+#ifndef MINI_ECU_LOG_H
+#define MINI_ECU_LOG_H
 
+void log_print(const char *fmt, ...);
 
-
-void log_print(const char *fmt,...);
-
-
-#endif
+#endif /* MINI_ECU_LOG_H */

@@ -1,10 +1,10 @@
 
 #include "hal/gpio.h"
-#include "stm32h7xx.h"
+#include "stm32l4xx.h"
 #include <stddef.h>
 
-#define LED_PIN       0U
-#define BUTTON_PIN   13U
+#define LED_PIN      7U
+#define BUTTON_PIN  13U
 
 /* Associer un port logique à ses registres */
 static GPIO_TypeDef *gpio_regs(gpio_port_t port)
@@ -22,29 +22,16 @@ static GPIO_TypeDef *gpio_regs(gpio_port_t port)
     }
 }
 
-/* Initialisation des périphériques GPIO */
+/* Initialisation assurée par MX_GPIO_Init() */
 void gpio_init(void)
 {
-    /* 1. Activer les horloges GPIOB et GPIOC */
-    RCC->AHB4ENR |= RCC_AHB4ENR_GPIOBEN
-                  | RCC_AHB4ENR_GPIOCEN;
-
-    (void)RCC->AHB4ENR;
-
-    /* 2. PB0 : sortie (MODER0 = 01) */
-    GPIOB->MODER &= ~(3U << 0);
-    GPIOB->MODER |=  (1U << 0);
-
-    /* Sortie push-pull, sans pull-up/down */
-    GPIOB->OTYPER &= ~(1U << LED_PIN);
-    GPIOB->PUPDR  &= ~(3U << 0);
-
-    /* 3. PC13 : entrée (MODER13 = 00) */
-    GPIOC->MODER &= ~(3U << 26);
-    GPIOC->PUPDR &= ~(3U << 26);
-
-    /* 4. Éteindre initialement la LED */
-    GPIOB->BSRR = (1U << 16);
+    /*
+     * PC7 et PC13 sont déjà configurés
+     * par STM32CubeIDE dans MX_GPIO_Init().
+     *
+     * Ne pas reconfigurer PC13 ici :
+     * il est utilisé par EXTI13.
+     */
 }
 
 /* Mettre une sortie à 1 */
@@ -57,7 +44,7 @@ void gpio_set(gpio_port_t port, uint8_t pin)
         return;
     }
 
-    regs->BSRR = (1U << pin);
+    regs->BSRR = (1UL << pin);
 }
 
 /* Mettre une sortie à 0 */
@@ -70,7 +57,7 @@ void gpio_clear(gpio_port_t port, uint8_t pin)
         return;
     }
 
-    regs->BSRR = (1U << (pin + 16U));
+    regs->BSRR = (1UL << (pin + 16U));
 }
 
 /* Inverser une sortie */
@@ -83,7 +70,7 @@ void gpio_toggle(gpio_port_t port, uint8_t pin)
         return;
     }
 
-    uint32_t mask = (1U << pin);
+    uint32_t mask = (1UL << pin);
 
     if ((regs->ODR & mask) != 0U)
     {
@@ -105,7 +92,7 @@ bool gpio_read(gpio_port_t port, uint8_t pin)
         return false;
     }
 
-    return (regs->IDR & (1U << pin)) != 0U;
+    return (regs->IDR & (1UL << pin)) != 0U;
 }
 
 /* Fonctions de notre Mini-ECU */
@@ -114,21 +101,20 @@ void mini_ecu_led_write(bool on)
 {
     if (on)
     {
-        gpio_set(GPIO_PORT_B, LED_PIN);
+        gpio_set(GPIO_PORT_C, LED_PIN);
     }
     else
     {
-        gpio_clear(GPIO_PORT_B, LED_PIN);
+        gpio_clear(GPIO_PORT_C, LED_PIN);
     }
 }
 
 void mini_ecu_led_toggle(void)
 {
-    gpio_toggle(GPIO_PORT_B, LED_PIN);
+    gpio_toggle(GPIO_PORT_C, LED_PIN);
 }
 
 bool mini_ecu_button_pressed(void)
 {
     return gpio_read(GPIO_PORT_C, BUTTON_PIN);
 }
-
